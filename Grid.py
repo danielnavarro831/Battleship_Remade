@@ -1,4 +1,3 @@
-import curses
 
 class Grid:
     def __init__(self, Difficulty):

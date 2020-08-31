@@ -1,6 +1,5 @@
 from Player import *
 from Grid import Grid
-from Controller import Controller
 from Window import Window
 import curses
 
