@@ -24,10 +24,12 @@ class Game:
         for ship in Player2.Ships.keys():
             Player2.auto_deploy(Player2.Ships[ship])
 
-game = Game()
-player = Player("Daniel", game, 1)
-enemy = Player("Madhu", game, 2)
-window = Window()
 
-game.setup(player, enemy)
-game.take_turn(player, enemy, window)
+
+#game = Game()
+#player = Player("Daniel", game, 1)
+#enemy = Player("Madhu", game, 2)
+#window = Window()
+
+#game.setup(player, enemy)
+#game.take_turn(player, enemy, window)

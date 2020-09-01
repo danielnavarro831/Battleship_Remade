@@ -4,8 +4,11 @@ import random
 
 class Player:
     def __init__(self, Name, Game, Player_Number):
-        self.Name = Name
-        self.Player_Num = Player_Number
+        self.Name = Name.title()
+        if Player_Number > 0 and Player_Number < 3:
+            self.Player_Num = Player_Number
+        else:
+            raise Exception("Invalid Player Number:", Player_Number)
         self. Player = True
         self.Ships = {}
         patrol_boat = Ship("Patrol Boat")
@@ -22,7 +25,7 @@ class Player:
         self.Wins = 0
         self.Ships_Remaining = self.get_ships_alive()
         self.Guesses = {}
-        #Guesses = {"A1": "Hit", "A2": "Miss"...}
+        #Guesses = {"A1": "Hit", "B2": "Miss"...}
         grid = Grid(Game.Difficulty)
         self.Grid = grid
         guess_grid = Grid(Game.Difficulty)

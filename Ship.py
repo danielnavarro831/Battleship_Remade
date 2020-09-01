@@ -10,6 +10,8 @@ class Ship:
             self.Length = 4
         elif Name == "Aircraft Carrier":
             self.Length = 5
+        else: 
+            raise Exception("Invalid Ship Type:", Name)
         self.Points = []
         #Points = [{Point: A1, Status: Hit}, {Point: A2, Status: Hit}, {Point: A3, Status: Blank}]
         self.Sunk = False

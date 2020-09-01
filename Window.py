@@ -146,7 +146,7 @@ class Window:
                         self.display_sunk_status(Player.Ships[ship_names[ship_counter]], counter)
                         ship_counter += 1
                     counter += 1
-            counter += 1
+            counter += 2
             times += 1
         self.screen.refresh()
         self.get_player_guess(Player, Enemy, counter)
@@ -168,7 +168,7 @@ class Window:
                 check_column = ""
                 for i in range(1, len(response)):
                     check_column += response[i]
-                if check_row.isalpha() and Player.Grid.translate_row(check_row) <= Player.Grid.Max and check_column.isdigit() and int(check_column) <= Player.Grid.Max:
+                if check_row.isalpha() and Player.Grid.translate_row(check_row) <= Player.Grid.Max and check_column.isdigit() and int(check_column) <= Player.Grid.Max and int(check_column) >= Player.Grid.Min:
                     if response in Player.Guesses:
                         self.screen.addstr(counter, 1, "Location already guessed. Choose another location.")
                         self.screen.refresh()

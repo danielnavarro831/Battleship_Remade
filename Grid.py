@@ -11,6 +11,8 @@ class Grid:
             self.Max = 15
         elif Difficulty == "Hard":
             self.Max = 20
+        else:
+            raise Exception("Invalid Difficulty Setting:", Difficulty)
         self.Blank = " "
         self.Hit = "X"
         self.Miss = "O"
@@ -30,13 +32,13 @@ class Grid:
     #        B:{1:Blank, 2:Blank, 3:Blank...}, ...}
 
     def set_guess_grid(self, Player):
-        for guess in player.Guesses.keys():
-            self.update_grid(translate_key(guess)[0], translate_key(guess)[1], Player.Guesses[guess])
+        for guess in Player.Guesses.keys():
+            self.update_grid(self.translate_key(guess)[0], self.translate_key(guess)[1], Player.Guesses[guess])
 
     def translate_key(self, Key):
         keys = []
         keys.append(Key[0])
-        keys.append(Key[1:])
+        keys.append(int(Key[1:]))
         return keys
 
     def update_grid(self, Row, Column, Status):
