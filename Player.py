@@ -9,7 +9,7 @@ class Player:
             self.Player_Num = Player_Number
         else:
             raise Exception("Invalid Player Number:", Player_Number)
-        self. Player = True
+        self.Player = True
         self.Ships = {}
         patrol_boat = Ship("Patrol Boat")
         submarine = Ship("Submarine")
@@ -34,7 +34,7 @@ class Player:
     def get_ships_alive(self):
         counter = 0
         for ship in self.Ships.keys():
-            if self.Ships[ship].Info["Sunk"] == False:
+            if self.Ships[ship].Sunk == False:
                 counter += 1
         return counter
 
@@ -102,4 +102,46 @@ class Player:
         return [Hit, Ship]
 
 class AI(Player):
-    pass
+    def __init__(self, Name, Game, Player_Number):
+        super().__init__(Name, Game, Player_Number)
+        self.Player = False
+
+    def AI_guess(self):
+        unsunken_ship = False
+        known_hits = []
+        fire_at = ""
+        for guess in self.Guesses.keys():
+            if self.Guesses[guess] == "Hit":
+                unsunken_ship = True
+                known_hits.append(guess)
+        if unsunken_ship == True:
+            loop = True
+            while loop == True:
+                randomizer = random.randint(0, len(known_hits)-1)
+                aim_at = known_hits[randomizer] #"A1"
+                X = int(aim_at[1:])
+                Y = self.Grid.translate_row(aim_at[0])
+                compass = random.randint(0, 3)
+                next_guess = [Y, X]
+                if compass == 0 and Y + 1 <= self.Grid.Max: #South Y+1
+                    next_guess = [Y +1, X]
+                elif compass == 1 and Y -1 >= self.Grid.Min: #North
+                    next_guess = [Y -1, X]
+                elif compass == 2 and X -1 >= self.Grid.Min: #West
+                    next_guess = [Y, X -1]
+                elif compass == 3 and X +1 <= self.Grid.Max: #east
+                    next_guess = [Y, X +1]
+                if self.Grid.translate_grid(next_guess) not in self.Guesses:
+                    fire_at = self.Grid.translate_grid(next_guess)
+                    loop = False
+        else:
+            loop = True
+            while loop == True:
+                next_guess = []
+                X = random.randint(self.Grid.Min, self.Grid.Max)
+                Y = random.randint(self.Grid.Min, self.Grid.Max)
+                next_guess = [Y, X]
+                if self.Grid.translate_grid(next_guess) not in self.Guesses:
+                    fire_at = self.Grid.translate_grid(next_guess)
+                    loop = False
+        return fire_at

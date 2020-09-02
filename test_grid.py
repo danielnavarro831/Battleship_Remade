@@ -78,3 +78,6 @@ class TestGridMethods(unittest.TestCase):
         self.assertEqual(self.grid1.grid["A"][1], "Hit")
         self.assertEqual(self.grid1.grid["A"][2], "Miss")
         self.assertEqual(self.grid1.grid["B"][1], "Hit")
+
+if __name__ == '__main__':
+    unittest.main()

@@ -7,6 +7,7 @@ class Window:
         os.system('mode con: cols=120 lines=45')
         self.screen = curses.initscr()
         self.screen.clear()
+        self.line = 0
         curses.start_color()
         curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
         curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
@@ -15,11 +16,10 @@ class Window:
         #self.screen.endwin()
 
     def Main_Menu(self, Game):
-        #screen = curses.initscr()
         self.screen.clear()
-        line = "------------------------------------------------------------------------------"
-        line2 = "                                   Battleship                                 "
-        line3 = "------------------------------------------------------------------------------"
+        line = "----------------------------------------------------------------------------------------------------------------------"
+        line2 = "                                                    Battleship                                 "
+        line3 = "----------------------------------------------------------------------------------------------------------------------"
         line4 = "Type Your Difficulty:"
         line5 = " * Easy"
         line6 = " * Medium"
@@ -28,7 +28,12 @@ class Window:
         Menu = [line, line2, line3, line4, line5, line6, line7, line8]
         counter = 1
         for a in range(len(Menu)):
-            self.screen.addstr(counter, 1, Menu[a])
+            if a == 1:
+                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(3))
+            elif a == 3:
+                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(2))
+            else:
+                self.screen.addstr(counter, 1, Menu[a])
             counter += 1
         self.screen.refresh()
         loop = True
@@ -38,15 +43,15 @@ class Window:
             if response == "Easy" or response == "Medium" or response == "Hard":
                 Game.Difficulty = response
                 self.screen.refresh()
-                loop == False
+                loop = False
             else:
                 self.screen.refresh()
     
     def get_grid(self, Game, Player, Enemy, Line):
         counter = Line
-        th1 = "-----------------------------------------------------------------------------------------------------------------------"
+        th1 = "----------------------------------------------------------------------------------------------------------------------"
         th2 = "Turn: "
-        th3 = "-----------------------------------------------------------------------------------------------------------------------"
+        th3 = "----------------------------------------------------------------------------------------------------------------------"
         self.screen.addstr(counter, 1, th1)
         counter +=1
         self.screen.addstr(counter, 1, th2)
@@ -77,10 +82,7 @@ class Window:
                     h3 += "-"
             self.screen.addstr(counter, 1, h1)
             counter +=1 
-            if times == 1:
-                self.screen.addstr(counter, 1, h2, curses.color_pair(4))
-            else:
-                self.screen.addstr(counter, 1, h2, curses.color_pair(4))
+            self.screen.addstr(counter, 1, h2, curses.color_pair(4))
             self.screen.addch("/")
             counter += 1
             self.screen.addstr(counter, 1, h3)
@@ -121,7 +123,8 @@ class Window:
                         self.screen.addch("]")
                     #Display Ship Status
                     if counter % 2 == 0:
-                        self.display_sunk_status(Enemy.Ships[ship_names[ship_counter]], counter)
+                        if ship_counter < len(ship_names):
+                            self.display_sunk_status(Enemy.Ships[ship_names[ship_counter]], counter, Game)
                         ship_counter += 1
                     counter += 1
             else:          #Player Grid
@@ -143,13 +146,14 @@ class Window:
                         self.screen.addch("]")
                     #Display Ship Status
                     if counter % 2 == 0:
-                        self.display_sunk_status(Player.Ships[ship_names[ship_counter]], counter)
+                        if ship_counter < len(ship_names):
+                            self.display_sunk_status(Player.Ships[ship_names[ship_counter]], counter, Game)
                         ship_counter += 1
                     counter += 1
             counter += 2
             times += 1
         self.screen.refresh()
-        self.get_player_guess(Player, Enemy, counter)
+        self.line = counter
 
     def get_player_guess(self, Player, Enemy, Line):
         counter = Line
@@ -158,11 +162,15 @@ class Window:
         self.screen.refresh()
         loop = True
         while loop == True:
+            self.screen.move(counter +1, 0)
+            self.screen.clrtoeol() 
+            self.screen.refresh()
             response = self.screen.getstr(counter, 1).decode('utf-8')
             response = response.title()
             if len(response) > 3 or len(response) < 2:
-                self.screen.addstr(counter, 1, "Invalid Response")
+                self.screen.addstr(counter +1, 1, "Invalid Response")
                 self.screen.refresh()
+                response = self.screen.getstr(counter, 1).decode('utf-8')
             else:
                 check_row = response[0]
                 check_column = ""
@@ -170,8 +178,9 @@ class Window:
                     check_column += response[i]
                 if check_row.isalpha() and Player.Grid.translate_row(check_row) <= Player.Grid.Max and check_column.isdigit() and int(check_column) <= Player.Grid.Max and int(check_column) >= Player.Grid.Min:
                     if response in Player.Guesses:
-                        self.screen.addstr(counter, 1, "Location already guessed. Choose another location.")
+                        self.screen.addstr(counter +1, 1, "Location already guessed. Choose another location.")
                         self.screen.refresh()
+                        response = self.screen.getstr(counter, 1).decode('utf-8')
                     else:
                         attack = Enemy.check_guess(response)
                         if attack[0] == True:
@@ -179,6 +188,25 @@ class Window:
                         else:
                             self.miss(Player, Enemy, response, counter)
                         loop = False
+                else:
+                    self.screen.addstr(counter +1, 1, "Invalid Response")
+                    self.screen.refresh()
+                    response = self.screen.getstr(counter, 1).decode('utf-8')
+
+    def get_AI_guess(self, Player, Enemy, Line):
+        counter = Line
+        self.screen.move(counter, 0)
+        self.screen.clrtoeol() 
+        self.screen.refresh()
+        target = Player.AI_guess()
+        txt = Player.Name + " fires missiles at " + str(target)
+        self.screen.addstr(counter, 1, txt)
+        counter += 1
+        attack = Enemy.check_guess(target)
+        if attack[0] == True:
+            self.hit(Player, Enemy, attack[1], target, counter)
+        else:
+            self.miss(Player, Enemy, target, counter)
 
     def hit(self, Player, Enemy, Ship, Guess, Line):
         Enemy.Grid.update_grid(Guess[0], int(Guess[1:]), "Hit")
@@ -188,24 +216,35 @@ class Window:
             if Guess in Enemy.Ships[Ship].Points[point].values():
                 Enemy.Ships[Ship].Points[point]["Status"] = "Hit"
         line = ""
-        if Enemy.Ships[Ship].check_status() == True:
+        if Enemy.Ships[Ship].check_status(Player) == True:
             line = Player.Name + " sunk " + Enemy.Name + "'s " + Ship
         else:
             line = Player.Name + "'s attack hits!"
-        self.screen.addstr(Line, 1, line)
+        self.screen.move(Line +1, 0)
+        self.screen.clrtoeol() 
+        self.screen.addstr(Line +1, 1, line)
         self.screen.refresh()
+        response = self.screen.getstr(Line +1, 1).decode('utf-8')
 
     def miss(self, Player, Enemy, Guess, Line):
         Enemy.Grid.update_grid(Guess[0], int(Guess[1:]), "Miss")
         Player.Guess_Grid.update_grid(Guess[0], int(Guess[1:]), "Miss")
         Player.Guesses[Guess] = "Miss"
         line = Player.Name + "'s attack missed!"
-        self.screen.addstr(Line, 1, line)
+        self.screen.move(Line +1, 0)
+        self.screen.clrtoeol() 
+        self.screen.addstr(Line +1, 1, line)
         self.screen.refresh()
+        response = self.screen.getstr(Line, 1).decode('utf-8')
 
-    def display_sunk_status(self, Ship, Line):
+    def display_sunk_status(self, Ship, Line, Game):
         line = Ship.Name + ": "
-        self.screen.addstr(Line, 37, line)
+        size = 0
+        if Game.Difficulty == "Medium":
+            size = 5
+        elif Game.Difficulty == "Hard":
+            size = 10
+        self.screen.addstr(Line, 37 + size, line)
         if Ship.Sunk == True:
             line = "Sunk"
             self.screen.addstr(line, curses.color_pair(1))

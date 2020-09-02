@@ -35,16 +35,16 @@ class Grid:
         for guess in Player.Guesses.keys():
             self.update_grid(self.translate_key(guess)[0], self.translate_key(guess)[1], Player.Guesses[guess])
 
-    def translate_key(self, Key):
+    def update_grid(self, Row, Column, Status):
+        self.grid[Row][Column] = Status
+
+    def translate_key(self, Key): #Translates A1 to [A, 1]
         keys = []
         keys.append(Key[0])
         keys.append(int(Key[1:]))
         return keys
 
-    def update_grid(self, Row, Column, Status):
-        self.grid[Row][Column] = Status
-
-    def translate_grid(self, Point):
+    def translate_grid(self, Point): #Translates [1, 1] to A1
         point = ""
         if Point[0] == 1:
             point += "A"
@@ -89,7 +89,7 @@ class Grid:
         point += str(Point[1])
         return point
 
-    def translate_row(self, Row):
+    def translate_row(self, Row): #Translates A to 1
         if Row == "A":
             return 1
         elif Row == "B":
@@ -130,3 +130,5 @@ class Grid:
             return 19
         elif Row == "T":
             return 20
+        else:
+            return 21

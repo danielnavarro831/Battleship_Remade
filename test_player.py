@@ -73,3 +73,6 @@ class TestPlayerMethods(unittest.TestCase):
         self.assertEqual(check[1], "Patrol Boat")
         #The status of the ship's hit point should display as "Hit"
         self.assertEqual(self.p1.Ships["Patrol Boat"].Points[0]["Status"], "Hit")
+
+if __name__ == '__main__':
+    unittest.main()
