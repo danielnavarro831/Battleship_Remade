@@ -1,18 +1,9 @@
 
 class Grid:
-    def __init__(self, Difficulty):
-        self.Rows = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", 
-                     "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"]
+    def __init__(self):
+        self.Rows = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
         self.Min = 1
-        self.Max = 1
-        if Difficulty == "Easy":
-            self.Max = 10
-        elif Difficulty == "Medium":
-            self.Max = 15
-        elif Difficulty == "Hard":
-            self.Max = 20
-        else:
-            raise Exception("Invalid Difficulty Setting:", Difficulty)
+        self.Max = 10
         self.Blank = " "
         self.Hit = "X"
         self.Miss = "O"
@@ -66,26 +57,6 @@ class Grid:
             point += "I"
         elif Point[0] == 10:
             point += "J"
-        elif Point[0] == 11:
-            point += "K"
-        elif Point[0] == 12:
-            point += "L"
-        elif Point[0] == 13:
-            point += "M"
-        elif Point[0] == 14:
-            point += "N"
-        elif Point[0] == 15:
-            point += "O"
-        elif Point[0] == 16:
-            point += "P"
-        elif Point[0] == 17:
-            point += "Q"
-        elif Point[0] == 18:
-            point += "R"
-        elif Point[0] == 19:
-            point += "S"
-        elif Point[0] == 20:
-            point += "T"
         point += str(Point[1])
         return point
 
@@ -110,25 +81,5 @@ class Grid:
             return 9
         elif Row == "J":
             return 10
-        elif Row == "K":
-            return 11
-        elif Row == "L":
-            return 12
-        elif Row == "M":
-            return 13
-        elif Row == "N":
-            return 14
-        elif Row == "O":
-            return 15
-        elif Row == "P":
-            return 16
-        elif Row == "Q":
-            return 17
-        elif Row == "R":
-            return 18
-        elif Row == "S":
-            return 19
-        elif Row == "T":
-            return 20
         else:
-            return 21
+            return 11

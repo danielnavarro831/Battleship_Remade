@@ -3,7 +3,7 @@ from Grid import Grid
 import random
 
 class Player:
-    def __init__(self, Name, Game, Player_Number):
+    def __init__(self, Name, Player_Number):
         self.Name = Name.title()
         if Player_Number > 0 and Player_Number < 3:
             self.Player_Num = Player_Number
@@ -22,13 +22,12 @@ class Player:
         self.Ships["Battleship"] = battleship
         self.Ships["Aircraft Carrier"] = aircraft_carrier
         #{"Patrol Boat": patrol_boat, "Submarine": submarine...}
-        self.Wins = 0
         self.Ships_Remaining = self.get_ships_alive()
         self.Guesses = {}
         #Guesses = {"A1": "Hit", "B2": "Miss"...}
-        grid = Grid(Game.Difficulty)
+        grid = Grid()
         self.Grid = grid
-        guess_grid = Grid(Game.Difficulty)
+        guess_grid = Grid()
         self.Guess_Grid = guess_grid
 
     def get_ships_alive(self):
@@ -102,8 +101,8 @@ class Player:
         return [Hit, Ship]
 
 class AI(Player):
-    def __init__(self, Name, Game, Player_Number):
-        super().__init__(Name, Game, Player_Number)
+    def __init__(self, Name, Player_Number):
+        super().__init__(Name, Player_Number)
         self.Player = False
 
     def AI_guess(self):

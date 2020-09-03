@@ -13,25 +13,29 @@ class Window:
         curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
         curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
         curses.init_pair(4, curses.COLOR_CYAN, curses.COLOR_BLACK)
-        #self.screen.endwin()
 
     def Main_Menu(self, Game):
         self.screen.clear()
+        Game.P1_Wins = 0
+        Game.P2_Wins = 0
+        Game.Game = 0
         line = "----------------------------------------------------------------------------------------------------------------------"
-        line2 = "                                                    Battleship                                 "
+        line2 = "                                                    Battleship                                             "
         line3 = "----------------------------------------------------------------------------------------------------------------------"
-        line4 = "Type Your Difficulty:"
-        line5 = " * Easy"
-        line6 = " * Medium"
-        line7 = " * Hard"
+        line4 = "Type Your Selection"
+        line5 = " * 1 Player"
+        line6 = " * 2 Players"
+        line7 = " * Online"
         line8 = ""
         Menu = [line, line2, line3, line4, line5, line6, line7, line8]
         counter = 1
         for a in range(len(Menu)):
             if a == 1:
-                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(3))
+                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(4))
+                self.screen.addstr("Ver: ")
+                self.screen.addstr(str(Game.Version), curses.color_pair(2))
             elif a == 3:
-                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(2))
+                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(3))
             else:
                 self.screen.addstr(counter, 1, Menu[a])
             counter += 1
@@ -40,24 +44,36 @@ class Window:
         while loop == True:
             response = self.screen.getstr(counter, 1).decode('utf-8')
             response = response.title()
-            if response == "Easy" or response == "Medium" or response == "Hard":
-                Game.Difficulty = response
+            if response == "1 Player":
+                Game.PvP = False
                 self.screen.refresh()
                 loop = False
+                Game.start_game(self)
+            elif response == "2 Players":
+                Game.PvP = True
+                self.screen.refresh()
+                loop = False
+                Game.start_game(self)
+            elif response == "Online":
+                self.screen.addstr(counter+1, 1, "This feature is not yet available.")
+                self.screen.refresh()
             else:
                 self.screen.refresh()
     
     def get_grid(self, Game, Player, Enemy, Line):
         counter = Line
         th1 = "----------------------------------------------------------------------------------------------------------------------"
-        th2 = "Turn: "
-        th3 = "----------------------------------------------------------------------------------------------------------------------"
+        th2 = "Game: "
+        th3 = "  Turn: "
+        th4 = "----------------------------------------------------------------------------------------------------------------------"
         self.screen.addstr(counter, 1, th1)
         counter +=1
         self.screen.addstr(counter, 1, th2)
+        self.screen.addstr(str(Game.Game), curses.color_pair(2))
+        self.screen.addstr(th3)
         self.screen.addstr(str(Game.Turn), curses.color_pair(2))
         counter +=1
-        self.screen.addstr(counter, 1, th3)
+        self.screen.addstr(counter, 1, th4)
         counter +=1
         times = 1  
         ship_names = ["Patrol Boat", "Destroyer", "Submarine", "Battleship", "Aircraft Carrier"]
@@ -90,9 +106,9 @@ class Window:
             #Display Wins
             self.screen.addstr(counter, 1, "Wins: ")
             if times == 1:
-                self.screen.addstr(str(Enemy.Wins), curses.color_pair(2))
+                self.screen.addstr(str(Game.P2_Wins), curses.color_pair(2))
             else:
-                self.screen.addstr(str(Player.Wins), curses.color_pair(2))
+                self.screen.addstr(str(Game.P1_Wins), curses.color_pair(2))
             counter += 2
             #Make Grid
             line = "    "
@@ -124,7 +140,7 @@ class Window:
                     #Display Ship Status
                     if counter % 2 == 0:
                         if ship_counter < len(ship_names):
-                            self.display_sunk_status(Enemy.Ships[ship_names[ship_counter]], counter, Game)
+                            self.display_sunk_status(Enemy.Ships[ship_names[ship_counter]], counter)
                         ship_counter += 1
                     counter += 1
             else:          #Player Grid
@@ -147,13 +163,28 @@ class Window:
                     #Display Ship Status
                     if counter % 2 == 0:
                         if ship_counter < len(ship_names):
-                            self.display_sunk_status(Player.Ships[ship_names[ship_counter]], counter, Game)
+                            self.display_sunk_status(Player.Ships[ship_names[ship_counter]], counter)
                         ship_counter += 1
                     counter += 1
             counter += 2
             times += 1
         self.screen.refresh()
         self.line = counter
+
+    def hotseat_screen(self, Player):
+        self.screen.clear()
+        line = Player.Name
+        line2 = "'s Turn"
+        line3 = "Press "
+        line4 = " to continue"
+        mid = 60 - int((len(Player.Name) + len(line2))/2)
+        self.screen.addstr(20, mid, line, curses.color_pair(4))
+        self.screen.addstr(line2)
+        self.screen.addstr(21, 48, line3)
+        self.screen.addstr("Enter", curses.color_pair(2))
+        self.screen.addstr(line4)
+        self.screen.refresh()
+        response = self.screen.getstr().decode('utf-8')
 
     def get_player_guess(self, Player, Enemy, Line):
         counter = Line
@@ -168,6 +199,8 @@ class Window:
             response = self.screen.getstr(counter, 1).decode('utf-8')
             response = response.title()
             if len(response) > 3 or len(response) < 2:
+                self.screen.move(counter, 0)
+                self.screen.clrtoeol() 
                 self.screen.addstr(counter +1, 1, "Invalid Response")
                 self.screen.refresh()
                 response = self.screen.getstr(counter, 1).decode('utf-8')
@@ -237,22 +270,106 @@ class Window:
         self.screen.refresh()
         response = self.screen.getstr(Line, 1).decode('utf-8')
 
-    def display_sunk_status(self, Ship, Line, Game):
+    def display_sunk_status(self, Ship, Line):
         line = Ship.Name + ": "
-        size = 0
-        if Game.Difficulty == "Medium":
-            size = 5
-        elif Game.Difficulty == "Hard":
-            size = 10
-        self.screen.addstr(Line, 37 + size, line)
+        self.screen.addstr(Line, 37, line)
         if Ship.Sunk == True:
             line = "Sunk"
             self.screen.addstr(line, curses.color_pair(1))
-            #line2 = "  " + str(Ship.Points)
-            #self.screen.addstr(Line + 1, 37, line2)
         else:
             line = "Active"
             self.screen.addstr(line, curses.color_pair(3))
-            #line2 = "  " + str(Ship.Points)
-            #self.screen.addstr(Line + 1, 37, line2)
         self.screen.refresh()
+
+    def get_player_names(self, Game, Player, Enemy):
+        self.screen.clear()
+        if Game.PvP == True:
+            loop = True
+            player = 1
+            while loop == True:
+                self.screen.clear()
+                self.screen.addstr(20, 46, "What is the name of ")
+                if player == 1:
+                    self.screen.addstr("Player 1", curses.color_pair(4))
+                else:
+                    self.screen.addstr("Player 2", curses.color_pair(4))
+                self.screen.addstr("?")
+                self.screen.refresh()
+                response = self.screen.getstr(21, 46).decode('utf-8')
+                response = response.title()
+                if len(response) < 13 and len(response) > 0:
+                    if player == 1:
+                        Player.Name = response
+                        player += 1
+                    else:
+                        if response != Player.Name:
+                            Enemy.Name = response
+                            loop = False
+                        else:
+                            self.screen.addstr(22, 32, "That name is already in use. Please use a different name")
+                            self.screen.refresh()
+                elif len(response) > 13:
+                    self.screen.addstr(22, 36, "Please enter a name no longer than 12 characters")
+                    self.screen.refresh()
+                elif len(response) < 1:
+                    self.screen.addstr(22, 33, "Please enter a name that is at least 1 character long")
+                    self.screen.refresh()
+        else:
+            loop = True
+            while loop == True:
+                self.screen.addstr(20, 51, "What is your name?")
+                self.screen.refresh()
+                response = self.screen.getstr(21, 51).decode('utf-8')
+                response = response.title()
+                if len(response) < 13 and len(response) > 0:
+                    Player.Name = response
+                    loop = False
+                elif len(response) > 13:
+                    self.screen.addstr(22, 36, "Please enter a name no longer than 12 characters")
+                    self.screen.refresh()
+                elif len(response) < 1:
+                    self.screen.addstr(22, 33, "Please enter a name that is at least 1 character long")
+                    self.screen.refresh()
+
+    def play_again(self, Game, Player, Enemy):
+        confirm = ["Yes", "Yeah", "Sure", "Yea", "Ye", "Ok", "Aiight", "Alright", "Y"]
+        cancel = ["No", "Nah", "Na", "Nope", "N", "Quit", "End", "Cancel", "Negative"]
+        loop = True
+        winner = ""
+        if Player.get_ships_alive() == 0:
+            winner = Enemy.Name
+        else:
+            winner = Player.Name
+        line = " wins!"
+        mid = 60 - int((len(line) + len(winner))/2)
+        while loop == True:
+            self.screen.clear()
+            self.screen.addstr(19, mid, winner, curses.color_pair(4))
+            self.screen.addstr(line)
+            self.screen.addstr(20, 46, "Would you like to play again?")
+            self.screen.refresh()
+            response = self.screen.getstr(21, 46).decode('utf-8')
+            response = response.title()
+            if response in confirm:
+                loop = False
+                Game.start_game(self)
+            elif response in cancel:
+                loop2 = True
+                while loop2 == True:
+                    self.screen.clear()
+                    self.screen.addstr(20, 47, "Return to Main Menu?")
+                    self.screen.refresh()
+                    response = self.screen.getstr(21, 47).decode('utf-8')
+                    response = response.title()
+                    if response in confirm:
+                        loop = False
+                        loop2 = False
+                        self.Main_Menu(Game)
+                    else:
+                        self.screen.clear()
+                        self.screen.addstr(20, 47, "Thanks for playing!")
+                        self.screen.refresh()
+                        loop2 = False
+                        loop = False
+                        response = self.screen.getstr(21, 47).decode('utf-8')
+                        curses.endwin()

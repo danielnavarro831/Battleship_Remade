@@ -1,22 +1,18 @@
 import unittest
-from Ship import Ship
 from Player import Player
-from Battleship_Remade import Game
 
 class TestPlayerMethods(unittest.TestCase):
     def setUp(self):
         #Initializes before every test
-        self.game = Game()
-        self.game.Difficulty = "Easy"
-        self.p1 = Player("Player 1", self.game, 1)
+        self.p1 = Player("Player 1", 1)
 
     def test_player_num(self):
         #Should only allow numbers 1 and 2
-        p2 = Player("Player 2", self.game, 2)
+        p2 = Player("Player 2", 2)
         self.assertEqual(self.p1.Player_Num, 1)
         self.assertEqual(p2.Player_Num, 2)
-        self.assertRaises(Exception, Player, "Player 3", self.game, 3)
-        self.assertRaises(Exception, Player, "Player 0", self.game, 0)
+        self.assertRaises(Exception, Player, "Player 3", 3)
+        self.assertRaises(Exception, Player, "Player 0", 0)
 
     def test_player_ship_creation(self):
         #All 5 ships should exist in self.p1.Ships upon player class creation

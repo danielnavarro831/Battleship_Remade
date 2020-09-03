@@ -5,10 +5,12 @@ import curses
 
 class Game:
     def __init__(self):
-        self.Game = 1
+        self.Game = 0
         self.Turn = 1
-        self.Game_Over = False
-        self.Difficulty = "Easy"
+        self.P1_Wins = 0
+        self.P2_Wins = 0
+        self.PvP = False
+        self.Version = 1.01
 
     def end_game(self, Player, Enemy):
         end = False
@@ -18,14 +20,31 @@ class Game:
 
     def take_turn(self, Player, Enemy, Window):
         while self.end_game(Player, Enemy) == False:
-            window.screen.clear()
+            if self.PvP == True:
+                Window.hotseat_screen(Player)
+            Window.screen.clear()
             Window.get_grid(self, Player, Enemy, 0)
             Window.get_player_guess(Player, Enemy, Window.line)
-            window.screen.clear()
+            Window.screen.clear()
             Window.get_grid(self, Player, Enemy, 0)
-            if Enemy.Player == False:
-                Window.get_AI_guess(Enemy, Player, Window.line)
-            self.Turn += 1
+            if self.end_game(Player, Enemy) == False:
+                if self.PvP == True:
+                    Window.hotseat_screen(Enemy)
+                    Window.screen.clear()
+                    Window.get_grid(self, Enemy, Player, 0)
+                if Enemy.Player == False:
+                    Window.get_AI_guess(Enemy, Player, Window.line)
+                else:
+                    Window.get_player_guess(Enemy, Player, Window.line)
+                    Window.screen.clear()
+                    Window.get_grid(self, Enemy, Player, 0)
+                self.Turn += 1
+            if self.end_game(Player, Enemy) == True:
+                if Player.get_ships_alive() == 0:
+                    self.P2_Wins +=1
+                elif Enemy.get_ships_alive() == 0:
+                    self.P1_Wins += 1
+                Window.play_again(self, Player, Enemy)
 
     def setup(self, Player1, Player2):
         for ship in Player1.Ships.keys():
@@ -33,12 +52,22 @@ class Game:
         for ship in Player2.Ships.keys():
             Player2.auto_deploy(Player2.Ships[ship])
 
+    def start_game(self, Window):
+        self.Game += 1
+        self.Turn = 1
+        player = Player("Player 1", 1)
+        player2 = Player("Player 2", 2)
+        enemy = AI("Player 2", 2)
+        Window.get_player_names(game, player, player2)
+        if self.PvP == True:
+            self.setup(player, player2)
+            self.take_turn(player, player2, window)
+        else:
+            self.setup(player, enemy)
+            self.take_turn(player, enemy, window)
+
 
 if __name__ == '__main__':
     game = Game()
     window = Window()
     window.Main_Menu(game)
-    player = Player("Daniel", game, 1)
-    enemy = AI("Madhu", game, 2)
-    game.setup(player, enemy)
-    game.take_turn(player, enemy, window)

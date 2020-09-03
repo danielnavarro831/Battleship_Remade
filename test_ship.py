@@ -1,20 +1,17 @@
 import unittest
 from Ship import Ship
 from Player import Player
-from Battleship_Remade import Game
 
 class TestShipMethods(unittest.TestCase):
 
     def test_basic(self):
-        game = Game()
-        game.Difficulty = "Easy"
-        p1 = Player("P1", game, 1)
-        "Ship should not be already sunk when created"
+        p1 = Player("P1", 1)
+        #Ship should not be already sunk when created
         ship = Ship("Patrol Boat")
         assert not ship.check_status(p1)
 
     def test_length(self):
-        "Checks to see if each ship is the correct length"
+        #Checks to see if each ship is the correct length
         patrol_boat = Ship("Patrol Boat")
         submarine = Ship("Submarine")
         destroyer = Ship("Destroyer")
@@ -28,9 +25,7 @@ class TestShipMethods(unittest.TestCase):
         self.assertRaises(Exception, Ship, "Banana")
 
     def test_check_status(self):
-        game = Game()
-        game.Difficulty = "Easy"
-        p1 = Player("P1", game, 1)
+        p1 = Player("P1", 1)
         patrol_boat = Ship("Patrol Boat")
         point1 = {"Point": "A1", "Status": "Hit"}
         point2 = {"Point": "A2", "Status": "Hit"}
