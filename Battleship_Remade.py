@@ -1,6 +1,7 @@
 from Player import *
 from Grid import Grid
 from Window import Window
+from Save_File import Save_File
 import curses
 
 class Game:
@@ -10,7 +11,10 @@ class Game:
         self.P1_Wins = 0
         self.P2_Wins = 0
         self.PvP = False
-        self.Version = 1.01
+        self.Version = 1.02
+        self.Active_Player = 1
+        self.P1_Passcode = ""
+        self.P2_Passcode = ""
 
     def end_game(self, Player, Enemy):
         end = False
@@ -20,25 +24,29 @@ class Game:
 
     def take_turn(self, Player, Enemy, Window):
         while self.end_game(Player, Enemy) == False:
-            if self.PvP == True:
-                Window.hotseat_screen(Player)
-            Window.screen.clear()
-            Window.get_grid(self, Player, Enemy, 0)
-            Window.get_player_guess(Player, Enemy, Window.line)
-            Window.screen.clear()
-            Window.get_grid(self, Player, Enemy, 0)
-            if self.end_game(Player, Enemy) == False:
+            if self.Active_Player == 1:
                 if self.PvP == True:
-                    Window.hotseat_screen(Enemy)
-                    Window.screen.clear()
-                    Window.get_grid(self, Enemy, Player, 0)
-                if Enemy.Player == False:
-                    Window.get_AI_guess(Enemy, Player, Window.line)
-                else:
-                    Window.get_player_guess(Enemy, Player, Window.line)
-                    Window.screen.clear()
-                    Window.get_grid(self, Enemy, Player, 0)
-                self.Turn += 1
+                    Window.hotseat_screen(Player)
+                Window.screen.clear()
+                Window.get_grid(self, Player, Enemy, 0)
+                Window.get_player_guess(Player, Enemy, Window.line, self)
+                Window.screen.clear()
+                Window.get_grid(self, Player, Enemy, 0)
+                self.Active_Player = 2
+            if self.end_game(Player, Enemy) == False:
+                if self.Active_Player == 2:
+                    if self.PvP == True:
+                        Window.hotseat_screen(Enemy)
+                        Window.screen.clear()
+                        Window.get_grid(self, Enemy, Player, 0)
+                    if Enemy.Player == False:
+                        Window.get_AI_guess(Enemy, Player, Window.line)
+                    else:
+                        Window.get_player_guess(Enemy, Player, Window.line, self)
+                        Window.screen.clear()
+                        Window.get_grid(self, Enemy, Player, 0)
+                    self.Active_Player = 1
+                    self.Turn += 1
             if self.end_game(Player, Enemy) == True:
                 if Player.get_ships_alive() == 0:
                     self.P2_Wins +=1
@@ -61,13 +69,20 @@ class Game:
         Window.get_player_names(game, player, player2)
         if self.PvP == True:
             self.setup(player, player2)
-            self.take_turn(player, player2, window)
+            self.take_turn(player, player2, Window)
         else:
             self.setup(player, enemy)
-            self.take_turn(player, enemy, window)
+            self.take_turn(player, enemy, Window)
 
+    def continue_game(self, Window):
+        player = Player("Player 1", 1)
+        player2 = Player("Player 2", 2)
+        Window.Save.load_game(player, player2, self)
+        self.PvP = True
+        self.take_turn(player, player2, Window)
 
 if __name__ == '__main__':
     game = Game()
     window = Window()
     window.Main_Menu(game)
+    #game.continue_game(window)

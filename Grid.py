@@ -27,7 +27,7 @@ class Grid:
             self.update_grid(self.translate_key(guess)[0], self.translate_key(guess)[1], Player.Guesses[guess])
 
     def update_grid(self, Row, Column, Status):
-        self.grid[Row][Column] = Status
+        self.grid[Row][int(Column)] = Status
 
     def translate_key(self, Key): #Translates A1 to [A, 1]
         keys = []

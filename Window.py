@@ -1,6 +1,7 @@
 import curses
 import time
 import os
+from Save_File import Save_File
 
 class Window:
     def __init__(self):
@@ -13,6 +14,8 @@ class Window:
         curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
         curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
         curses.init_pair(4, curses.COLOR_CYAN, curses.COLOR_BLACK)
+        save = Save_File()
+        self.Save = save
 
     def Main_Menu(self, Game):
         self.screen.clear()
@@ -55,10 +58,51 @@ class Window:
                 loop = False
                 Game.start_game(self)
             elif response == "Online":
-                self.screen.addstr(counter+1, 1, "This feature is not yet available.")
-                self.screen.refresh()
+                Game.PvP = True
+                loop = False
+                self.online_multiplayer(Game)
             else:
                 self.screen.refresh()
+
+    def online_multiplayer(self, Game):
+        self.screen.clear()
+        line = "----------------------------------------------------------------------------------------------------------------------"
+        line2 = "                                               Battleship - Online                                             "
+        line3 = "----------------------------------------------------------------------------------------------------------------------"
+        line4 = "Type Your Selection"
+        line5 = " * Create Game"
+        line6 = " * Continue Game"
+        line7 = " * Back"
+        line8 = ""
+        counter = 1
+        Menu = [line, line2, line3, line4, line5, line6, line7, line8]
+        for a in range(len(Menu)):
+            if a == 1:
+                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(4))
+            elif a == 3:
+                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(3))
+            else:
+                self.screen.addstr(counter, 1, Menu[a])
+            counter += 1
+        self.screen.refresh()
+        loop = True
+        while loop == True:
+            response = self.screen.getstr(counter, 1).decode('utf-8')
+            response = response.title()
+            if response == "Create Game":
+                loop = False
+            elif response == "Continue Game":
+                loop = False
+            elif response == "Back":
+                loop = False
+            else:
+                self.screen.refresh()
+
+    def get_player_passcode(self, Game, Player):
+        pass
+
+    def set_player_passcode(self, Game, Player):
+        pass
     
     def get_grid(self, Game, Player, Enemy, Line):
         counter = Line
@@ -186,7 +230,7 @@ class Window:
         self.screen.refresh()
         response = self.screen.getstr().decode('utf-8')
 
-    def get_player_guess(self, Player, Enemy, Line):
+    def get_player_guess(self, Player, Enemy, Line, Game):
         counter = Line
         self.screen.addstr(counter, 1, "Where will you fire missiles?")
         counter += 1
@@ -198,33 +242,53 @@ class Window:
             self.screen.refresh()
             response = self.screen.getstr(counter, 1).decode('utf-8')
             response = response.title()
-            if len(response) > 3 or len(response) < 2:
-                self.screen.move(counter, 0)
-                self.screen.clrtoeol() 
-                self.screen.addstr(counter +1, 1, "Invalid Response")
-                self.screen.refresh()
-                response = self.screen.getstr(counter, 1).decode('utf-8')
-            else:
-                check_row = response[0]
-                check_column = ""
-                for i in range(1, len(response)):
-                    check_column += response[i]
-                if check_row.isalpha() and Player.Grid.translate_row(check_row) <= Player.Grid.Max and check_column.isdigit() and int(check_column) <= Player.Grid.Max and int(check_column) >= Player.Grid.Min:
-                    if response in Player.Guesses:
-                        self.screen.addstr(counter +1, 1, "Location already guessed. Choose another location.")
-                        self.screen.refresh()
-                        response = self.screen.getstr(counter, 1).decode('utf-8')
-                    else:
-                        attack = Enemy.check_guess(response)
-                        if attack[0] == True:
-                            self.hit(Player, Enemy, attack[1], response, counter)
-                        else:
-                            self.miss(Player, Enemy, response, counter)
-                        loop = False
+            if response == "Save" and Game.PvP == True:
+                if Player.Player_Num == 1:
+                    self.screen.addstr(counter +1, 1, "Saving...")
+                    self.screen.refresh()
+                    self.Save.save_game(Player, Enemy, Game)
+                    self.screen.addstr(counter +1, 1, "Save Complete!")
+                    self.screen.refresh()
+                    self.screen.move(counter, 0)
+                    self.screen.clrtoeol()
+                    self.screen.refresh()
                 else:
+                    self.screen.addstr(counter +1, 1, "Saving...")
+                    self.screen.refresh()
+                    self.Save.save_game(Enemy, Player, Game)
+                    self.screen.addstr(counter +1, 1, "Save Complete!")
+                    self.screen.refresh()
+                    self.screen.move(counter, 0)
+                    self.screen.clrtoeol()
+                    self.screen.refresh()
+            else:
+                if len(response) > 3 or len(response) < 2:
+                    self.screen.move(counter, 0)
+                    self.screen.clrtoeol() 
                     self.screen.addstr(counter +1, 1, "Invalid Response")
                     self.screen.refresh()
                     response = self.screen.getstr(counter, 1).decode('utf-8')
+                else:
+                    check_row = response[0]
+                    check_column = ""
+                    for i in range(1, len(response)):
+                        check_column += response[i]
+                    if check_row.isalpha() and Player.Grid.translate_row(check_row) <= Player.Grid.Max and check_column.isdigit() and int(check_column) <= Player.Grid.Max and int(check_column) >= Player.Grid.Min:
+                        if response in Player.Guesses:
+                            self.screen.addstr(counter +1, 1, "Location already guessed. Choose another location.")
+                            self.screen.refresh()
+                            response = self.screen.getstr(counter, 1).decode('utf-8')
+                        else:
+                            attack = Enemy.check_guess(response)
+                            if attack[0] == True:
+                                self.hit(Player, Enemy, attack[1], response, counter)
+                            else:
+                                self.miss(Player, Enemy, response, counter)
+                            loop = False
+                    else:
+                        self.screen.addstr(counter +1, 1, "Invalid Response")
+                        self.screen.refresh()
+                        response = self.screen.getstr(counter, 1).decode('utf-8')
 
     def get_AI_guess(self, Player, Enemy, Line):
         counter = Line
