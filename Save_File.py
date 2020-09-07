@@ -3,19 +3,32 @@ from openpyxl import load_workbook
 
 class Save_File:
     def __init__(self):
-        self.file_path = 'C:\\Users\\Daniel\\source\\repos\\Battleship Remade\\Battleship_Online.xlsx'
-        self.URL = ""
+        self.local_path = ''
+        self.online_path = ''
 
-    def get_game_codes(self):
-        game_codes = []
-        #Go to self.URL
-        #Check filenames of each save listed
-        #Create list named 'game_codes' of each filename used
-        return game_codes
+    def check_for_local_saved_data(self):
+        wb = load_workbook(self.local_path)
+        sheets = wb.sheetnames
+        Game_State = wb[sheets[2]]
+        if Game_State.cell(row = 9, column = 2).value:
+            return True
+        else:
+            return False
+
+    def check_for_online_saved_data(self):
+        wb = load_workbook(self.online_path)
+        sheets = wb.sheetnames
+        Game_State = wb[sheets[2]]
+        if Game_State.cell(row = 9, column = 2).value == True:
+            return True
+        else:
+            return False
 
     def save_game(self, Player, Enemy, Game):
-        print("Saving...")
-        wb = load_workbook(self.file_path)
+        if Game.Online == True:
+            wb = load_workbook(self.online_path)
+        else:
+            wb = load_workbook(self.local_path)
         sheets = wb.sheetnames
         Player1 = wb[sheets[0]]
         Player2 = wb[sheets[1]]
@@ -33,7 +46,7 @@ class Save_File:
         for row in Player2['A19:C119']:
             for cell in row:
                 cell.value = None
-        for row in Game_State['B2:B7']:
+        for row in Game_State['B2:B9']:
             for cell in row:
                 cell.value = None
         #Save Player Names
@@ -70,11 +83,17 @@ class Save_File:
         Game_State.cell(row = 6, column = 2).value = Game.Active_Player
         Game_State.cell(row = 7, column = 2).value = Game.P1_Passcode
         Game_State.cell(row = 8, column = 2).value = Game.P2_Passcode
-        wb.save(self.file_path) 
-        print("Save Complete!")
+        Game_State.cell(row = 9, column = 2).value = True
+        if Game.Online == False:
+            wb.save(self.local_path)
+        else:
+            wb.save(self.online_path)
 
     def load_game(self, Player, Enemy, Game):
-        wb = load_workbook(self.file_path)
+        if Game.Online == False:
+            wb = load_workbook(self.local_path)
+        else:
+            wb = load_workbook(self.online_path)
         sheets = wb.sheetnames
         Player1 = wb[sheets[0]]
         Player2 = wb[sheets[1]]
@@ -135,3 +154,33 @@ class Save_File:
         Game.Active_Player = Game_State.cell(row = 6, column = 2).value
         Game.P1_Passcode = Game_State.cell(row = 7, column = 2).value
         Game.P2_Passcode = Game_State.cell(row = 8, column = 2).value
+
+    def delete_data(self, Online_or_Local):
+        if Online_or_Local == "Online":
+            wb = load_workbook(self.online_path)
+        else:
+            wb = load_workbook(self.local_path)
+        sheets = wb.sheetnames
+        Player1 = wb[sheets[0]]
+        Player2 = wb[sheets[1]]
+        Game_State = wb[sheets[2]]
+        #Clear Save File
+        for row in Player1['B2:C18']:
+            for cell in row:
+                cell.value = None
+        for row in Player1['A19:C119']:
+            for cell in row:
+                cell.value = None
+        for row in Player2['B2:C18']:
+            for cell in row:
+                cell.value = None
+        for row in Player2['A19:C119']:
+            for cell in row:
+                cell.value = None
+        for row in Game_State['B2:B9']:
+            for cell in row:
+                cell.value = None
+        if Online_or_Local == "Online":
+            wb.save(self.online_path)
+        else:
+            wb.save(self.local_path)

@@ -11,7 +11,8 @@ class Game:
         self.P1_Wins = 0
         self.P2_Wins = 0
         self.PvP = False
-        self.Version = 1.02
+        self.Online = False
+        self.Version = 1.00
         self.Active_Player = 1
         self.P1_Passcode = ""
         self.P2_Passcode = ""
@@ -26,17 +27,31 @@ class Game:
         while self.end_game(Player, Enemy) == False:
             if self.Active_Player == 1:
                 if self.PvP == True:
-                    Window.hotseat_screen(Player)
+                    if self.Online == False:
+                        Window.hotseat_screen(Player)
+                    else:
+                        if self.Turn == 1:
+                            Window.set_player_passcode(self, Player)
+                        else:
+                            Window.get_player_passcode(self, Player)
                 Window.screen.clear()
                 Window.get_grid(self, Player, Enemy, 0)
                 Window.get_player_guess(Player, Enemy, Window.line, self)
                 Window.screen.clear()
                 Window.get_grid(self, Player, Enemy, 0)
                 self.Active_Player = 2
+                if self.Online == True:
+                    Window.Save.save_game(Player, Enemy, self)
             if self.end_game(Player, Enemy) == False:
                 if self.Active_Player == 2:
                     if self.PvP == True:
-                        Window.hotseat_screen(Enemy)
+                        if self.Online == False:
+                            Window.hotseat_screen(Enemy)
+                        else:
+                            if self.Turn == 1:
+                                Window.set_player_passcode(self, Enemy)
+                            else:
+                                Window.get_player_passcode(self, Enemy)
                         Window.screen.clear()
                         Window.get_grid(self, Enemy, Player, 0)
                     if Enemy.Player == False:
@@ -47,6 +62,8 @@ class Game:
                         Window.get_grid(self, Enemy, Player, 0)
                     self.Active_Player = 1
                     self.Turn += 1
+                    if self.Online == True:
+                        Window.Save.save_game(Player, Enemy, self)
             if self.end_game(Player, Enemy) == True:
                 if Player.get_ships_alive() == 0:
                     self.P2_Wins +=1
@@ -85,4 +102,3 @@ if __name__ == '__main__':
     game = Game()
     window = Window()
     window.Main_Menu(game)
-    #game.continue_game(window)

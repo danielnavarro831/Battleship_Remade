@@ -14,6 +14,7 @@ class Window:
         curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
         curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
         curses.init_pair(4, curses.COLOR_CYAN, curses.COLOR_BLACK)
+        curses.init_pair(5, curses.COLOR_WHITE, curses.COLOR_RED)
         save = Save_File()
         self.Save = save
 
@@ -29,8 +30,10 @@ class Window:
         line5 = " * 1 Player"
         line6 = " * 2 Players"
         line7 = " * Online"
-        line8 = ""
-        Menu = [line, line2, line3, line4, line5, line6, line7, line8]
+        line8 = " * Rules"
+        line9 = " * Settings"
+        line10 = ""
+        Menu = [line, line2, line3, line4, line5, line6, line7, line8, line9, line10]
         counter = 1
         for a in range(len(Menu)):
             if a == 1:
@@ -49,18 +52,28 @@ class Window:
             response = response.title()
             if response == "1 Player":
                 Game.PvP = False
-                self.screen.refresh()
+                Game.Online = False
                 loop = False
                 Game.start_game(self)
             elif response == "2 Players":
-                Game.PvP = True
-                self.screen.refresh()
+                Game.Online = False
                 loop = False
-                Game.start_game(self)
+                if self.Save.check_for_local_saved_data() == True:
+                    self.continue_screen(Game)
+                else:
+                    Game.PvP = True
+                    Game.start_game(self)
             elif response == "Online":
                 Game.PvP = True
+                Game.Online = True
                 loop = False
                 self.online_multiplayer(Game)
+            elif response == "Rules":
+                loop = False
+                self.rules(Game)
+            elif response == "Settings":
+                loop = False
+                self.settings(Game)
             else:
                 self.screen.refresh()
 
@@ -70,8 +83,8 @@ class Window:
         line2 = "                                               Battleship - Online                                             "
         line3 = "----------------------------------------------------------------------------------------------------------------------"
         line4 = "Type Your Selection"
-        line5 = " * Create Game"
-        line6 = " * Continue Game"
+        line5 = " * New Game"
+        line6 = " * Continue"
         line7 = " * Back"
         line8 = ""
         counter = 1
@@ -89,20 +102,254 @@ class Window:
         while loop == True:
             response = self.screen.getstr(counter, 1).decode('utf-8')
             response = response.title()
-            if response == "Create Game":
+            if response == "New Game":
+                if self.Save.check_for_online_saved_data() == True:
+                    if self.overwrite_save_data() == True:
+                        loop = False
+                        Game.start_game(self)
+                    else:
+                        loop = False
+                        self.Main_Menu(Game)
+                else:
+                    loop = False
+                    Game.start_game(self)
+            elif response == "Continue":
                 loop = False
-            elif response == "Continue Game":
-                loop = False
+                Game.continue_game(self)
             elif response == "Back":
                 loop = False
+                self.Main_Menu(Game)
             else:
                 self.screen.refresh()
 
+    def rules(self, Game):
+        self.screen.clear()
+        line = "----------------------------------------------------------------------------------------------------------------------"
+        line2 = "                                                Battleship - Rules                                          "
+        line3 = "----------------------------------------------------------------------------------------------------------------------"
+        line4 = "Be the first person to sink the other person's ships!"
+        line5 = "Each player takes turns guessing a location of an enemy ship on the 10x10 grid"
+        line6 = "Guessing the correct location of a ship will result in a Hit: "
+        line7 = "An incorrect guess will result in a Miss: "
+        line8 = "Your own ships will appear hidden on your own grid as: "
+        line9 = "Each player has 5 ships of varrying lengths:"
+        line10 = " * Patrol Boat: 2"
+        line11 = " * Submarine: 3"
+        line12 = " * Destroyer: 3"
+        line13 = " * Battleship: 4"
+        line14 = " * Aircraft Carrier: 5"
+        line15 = ""
+        line16 = "Type "
+        Menu = [line, line2, line3, line4, line5, line6, line7, line8, line9, line10, line11, line12, line13, line14, line15, line16]
+        counter = 1
+        for a in range(len(Menu)):
+            if a == 5:
+                self.screen.addstr(counter, 1, Menu[a])
+                self.screen.addstr("X", curses.color_pair(1))
+            elif a == 6:
+                self.screen.addstr(counter, 1, Menu[a])
+                self.screen.addstr("O", curses.color_pair(2))
+            elif a == 7:
+                self.screen.addstr(counter, 1, Menu[a])
+                self.screen.addstr("*", curses.color_pair(3))
+            elif a == 15:
+                self.screen.addstr(counter, 1, Menu[a])
+                self.screen.addstr("'Back'", curses.color_pair(2))
+                self.screen.addstr(" to return to the Main Menu")
+            else:
+                self.screen.addstr(counter, 1, Menu[a])
+            counter += 1
+        self.screen.refresh()
+        loop = True
+        while loop == True:
+            response = self.screen.getstr(counter, 1).decode('utf-8')
+            response = response.title()
+            if response == "Back":
+                loop = False
+                self.Main_Menu(Game)
+            else:
+                self.screen.refresh()
+
+    def settings(self, Game):
+        self.screen.clear()
+        line = "----------------------------------------------------------------------------------------------------------------------"
+        line2 = "                                               Battleship - Settings                                       "
+        line3 = "----------------------------------------------------------------------------------------------------------------------"
+        line4 = "Type Your Selection:"
+        line5 = " (1) Delete Local Saved Data"
+        line6 = " (2) Delete Online Saved Data"
+        line7 = " (3) Back"
+        line8 = ""
+        Menu = [line, line2, line3, line4, line5, line6, line7, line8]
+        counter = 1
+        for a in range(len(Menu)):
+            if a == 1:
+                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(4))
+            elif a == 3:
+                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(3))
+            else:
+                self.screen.addstr(counter, 1, Menu[a])
+            counter += 1
+        self.screen.refresh()
+        loop = True
+        while loop == True:
+            response = self.screen.getstr(counter, 1).decode('utf-8')
+            response = response.title()
+            if response == "Delete Local Saved Data" or response == "1":
+                loop = False
+                self.Save.delete_data("Local")
+                self.screen.addstr(counter +1, 1, "Save Data Deleted")
+                self.screen.refresh()
+                response = self.screen.getstr(counter, 1).decode('utf-8')
+                self.Main_Menu(Game)
+            elif response == "Delete Online Saved Data" or response == "2":
+                loop = False
+                self.Save.delete_data("Online")
+                self.screen.addstr(counter +1, 1, "Save Data Deleted")
+                self.screen.refresh()
+                response = self.screen.getstr(counter, 1).decode('utf-8')
+                self.Main_Menu(Game)
+            elif response == "Back" or response == "3":
+                loop = False
+                self.Main_Menu(Game)
+            else:
+                self.screen.refresh()
+
+    def overwrite_save_data(self):
+        self.screen.clear()
+        line = "----------------------------------------------------------------------------------------------------------------------"
+        line2 = "                                               Battleship - Online                                             "
+        line3 = "----------------------------------------------------------------------------------------------------------------------"
+        line4 = "Warning:"
+        Menu = [line, line2, line3, line4]
+        counter = 1
+        for a in range(len(Menu)):
+            if a == 1:
+                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(4))
+            elif a == 3:
+                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(5))
+                self.screen.addstr(" Saved Data for a previous game already exists. Overwrite Saved Data? (Yes/No)")
+            else:
+                self.screen.addstr(counter, 1, Menu[a])
+            counter += 1
+        self.screen.refresh()
+        loop = True
+        while loop == True:
+            response = self.screen.getstr(counter, 1).decode('utf-8')
+            response = response.title()
+            if response == "Yes":
+                loop = False
+                return True
+            if response == "No":
+                loop = False
+                return False
+
     def get_player_passcode(self, Game, Player):
-        pass
+        self.screen.clear()
+        passcode = ""
+        if Game.Active_Player == 1:
+            passcode = Game.P1_Passcode
+        else:
+            passcode = Game.P2_Passcode
+        line = "----------------------------------------------------------------------------------------------------------------------"
+        line2 = "                                               Battleship - Online                                             "
+        line3 = "----------------------------------------------------------------------------------------------------------------------"
+        line4 = ""
+        line5 = "Enter Passcode:"
+        Menu = [line, line2, line3, line4, line5]
+        counter = 1
+        for a in range(len(Menu)):
+            if a == 1:
+                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(4))
+            elif a == 3:
+                self.screen.addstr(counter, 1, Menu[a])
+                self.screen.addstr(Player.Name, curses.color_pair(4))
+                self.screen.addstr("'s Turn")
+            else:
+                self.screen.addstr(counter, 1, Menu[a])
+            counter += 1
+        self.screen.refresh()
+        loop = True
+        while loop == True:
+            response = self.screen.getstr(counter, 1).decode('utf-8')
+            if response == passcode:
+                loop = False
+            else:
+                self.screen.addstr(counter +1, 1, "Incorrect passcode")
+                self.screen.refresh()
 
     def set_player_passcode(self, Game, Player):
-        pass
+        self.screen.clear()
+        line = "----------------------------------------------------------------------------------------------------------------------"
+        line2 = "                                               Battleship - Online                                             "
+        line3 = "----------------------------------------------------------------------------------------------------------------------"
+        line4 = "Set Passcode between 3 and 12 characters for "
+        Menu = [line, line2, line3, line4]
+        counter = 1
+        for a in range(len(Menu)):
+            if a == 1:
+                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(4))
+            elif a == 3:
+                self.screen.addstr(counter, 1, Menu[a])
+                self.screen.addstr(Player.Name, curses.color_pair(4))
+                self.screen.addstr(":")
+            else:
+                self.screen.addstr(counter, 1, Menu[a])
+            counter += 1
+        self.screen.refresh()
+        loop = True
+        while loop == True:
+            response = self.screen.getstr(counter, 1).decode('utf-8')
+            if len(response) > 2  and len(response) < 13:
+                if Player.Player_Num == 1:
+                    Game.P1_Passcode = response
+                else:
+                    Game.P2_Passcode = response
+                loop = False
+            elif len(response) < 3:
+                self.screen.addstr(counter +1, 1, "Passcode is too short")
+                self.screen.refresh()
+            elif len(response) > 12:
+                self.screen.addstr(counter +1, 1, "Passcode is too long")
+                self.screen.refresh()
+
+    def continue_screen(self, Game):
+        self.screen.clear()
+        line = "----------------------------------------------------------------------------------------------------------------------"
+        line2 = "                                               Battleship - Hot Seat                                          "
+        line3 = "----------------------------------------------------------------------------------------------------------------------"
+        line4 = "Type Your Selection"
+        line5 = " * New Game"
+        line6 = " * Continue"
+        line7 = " * Back"
+        line8 = ""
+        counter = 1
+        Menu = [line, line2, line3, line4, line5, line6, line7, line8]
+        for a in range(len(Menu)):
+            if a == 1:
+                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(4))
+            elif a == 3:
+                self.screen.addstr(counter, 1, Menu[a], curses.color_pair(3))
+            else:
+                self.screen.addstr(counter, 1, Menu[a])
+            counter += 1
+        self.screen.refresh()
+        loop = True
+        while loop == True:
+            response = self.screen.getstr(counter, 1).decode('utf-8')
+            response = response.title()
+            if response == "New Game":
+                Game.PvP = True
+                loop = False
+                Game.start_game(self)
+            elif response == "Continue":
+                loop = False
+                Game.continue_game(self)
+            elif response == "Back":
+                loop = False
+                self.Main_Menu(Game)
+            else:
+                self.screen.refresh()
     
     def get_grid(self, Game, Player, Enemy, Line):
         counter = Line
