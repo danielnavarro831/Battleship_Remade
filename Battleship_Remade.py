@@ -12,7 +12,7 @@ class Game:
         self.P2_Wins = 0
         self.PvP = False
         self.Online = False
-        self.Version = 1.01
+        self.Version = 1.02
         self.Active_Player = 1
         self.P1_Passcode = ""
         self.P2_Passcode = ""

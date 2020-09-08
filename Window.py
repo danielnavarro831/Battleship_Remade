@@ -255,7 +255,7 @@ class Window:
         line2 = "                                               Battleship - Online                                             "
         line3 = "----------------------------------------------------------------------------------------------------------------------"
         line4 = ""
-        line5 = "Enter Passcode:"
+        line5 = "Enter Passcode or type "
         Menu = [line, line2, line3, line4, line5]
         counter = 1
         for a in range(len(Menu)):
@@ -265,6 +265,10 @@ class Window:
                 self.screen.addstr(counter, 1, Menu[a])
                 self.screen.addstr(Player.Name, curses.color_pair(4))
                 self.screen.addstr("'s Turn")
+            elif a == 4:
+                self.screen.addstr(counter, 1, Menu[a])
+                self.screen.addstr("'Refresh'", curses.color_pair(2))
+                self.screen.addstr(" to see if it's your turn:")
             else:
                 self.screen.addstr(counter, 1, Menu[a])
             counter += 1
@@ -274,6 +278,9 @@ class Window:
             response = self.screen.getstr(counter, 1).decode('utf-8')
             if response == passcode:
                 loop = False
+            elif response == "Refresh" or response == "refresh":
+                loop = False
+                Game.continue_game(self)
             else:
                 self.screen.addstr(counter +1, 1, "Incorrect passcode")
                 self.screen.refresh()
@@ -300,7 +307,7 @@ class Window:
         loop = True
         while loop == True:
             response = self.screen.getstr(counter, 1).decode('utf-8')
-            if len(response) > 2  and len(response) < 13:
+            if len(response) > 2  and len(response) < 13 and response != "Refresh" and response != "refresh":
                 if Player.Player_Num == 1:
                     Game.P1_Passcode = response
                 else:
@@ -312,6 +319,8 @@ class Window:
             elif len(response) > 12:
                 self.screen.addstr(counter +1, 1, "Passcode is too long")
                 self.screen.refresh()
+            elif response == "Refresh" or response == "refresh":
+                self.screen.addstr(counter +1, 1, "You cannot set your password to the refresh command")
 
     def continue_screen(self, Game):
         self.screen.clear()
@@ -508,6 +517,9 @@ class Window:
                     self.screen.move(counter, 0)
                     self.screen.clrtoeol()
                     self.screen.refresh()
+            elif response == "Quit":
+                loop = False
+                self.Main_Menu(Game)
             else:
                 if len(response) > 3 or len(response) < 2:
                     self.screen.move(counter, 0)

@@ -3,8 +3,8 @@ from openpyxl import load_workbook
 
 class Save_File:
     def __init__(self):
-        self.local_path = ''
-        self.online_path = ''
+        self.local_path = 'C:\\Users\\Daniel\\source\\repos\\Battleship Remade\\Save Data\\Local\\Battleship_Online.xlsx'
+        self.online_path = 'C:\\Users\\Daniel\\Dropbox\\Team_Green\\Battleship_Online.xlsx'
 
     def check_for_local_saved_data(self):
         wb = load_workbook(self.local_path)
@@ -106,7 +106,7 @@ class Save_File:
         for ship in Player.Ships.keys():
             for point in range(Player.Ships[ship].Length):
                 #P1
-                location = Player1.cell(row = counter, column = 2).value
+                location = str(Player1.cell(row = counter, column = 2).value)
                 status = Player1.cell(row = counter, column = 3).value
                 a = {"Point": location, "Status": status}
                 key = Player.Grid.translate_key(location)
